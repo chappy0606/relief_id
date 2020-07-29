@@ -7,7 +7,12 @@ import sys
 
 
 def save_id():
+
     tools = pyocr.get_available_tools()
+
+    if len(tools) == 0:
+        print("No OCR tool found")
+        sys.exit(1)
     tool = tools[0]
 
     txt = tool.image_to_string(
@@ -16,17 +21,21 @@ def save_id():
         builder=pyocr.builders.TextBuilder()
     )
 
-    content = txt
-    pattern = '参戦ID : ([a-zA-Z0-9]{8})'
-
-    repatter = re.compile(pattern)
-    result = repatter.search(content)
-
-    if result is not None:
-        return result.group(1)
+    if len(txt) == 0:
+        return None
 
     else:
-        pass
+        content = txt
+        pattern = '参戦ID : ([a-zA-Z0-9]{8})'
+
+        repatter = re.compile(pattern)
+        result = repatter.search(content)
+
+        if result is not None:
+            return result.group(1)
+
+        else:
+            return None
 
 
 def save_screen_shot():
@@ -44,10 +53,8 @@ if __name__ == '__main__':
             save_screen_shot()
 
             relief_id = save_id()
-
             if relief_id is not None:
                 set_clipboard(relief_id)
-                print(relief_id)
 
             else:
                 pass
