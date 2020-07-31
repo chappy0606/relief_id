@@ -59,8 +59,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            start = time.time()
-
+            
             if search_images() is not None:
                 save_screen_shot(search_images())
 
