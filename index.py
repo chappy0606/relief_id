@@ -1,3 +1,5 @@
+import time
+
 from PIL import Image
 import pyocr.builders
 import re
@@ -6,14 +8,7 @@ import pyautogui
 import sys
 
 
-def save_id():
-
-    tools = pyocr.get_available_tools()
-
-    if len(tools) == 0:
-        print("No OCR tool found")
-        sys.exit(1)
-    tool = tools[0]
+def save_id(tool, repatter):
 
     txt = tool.image_to_string(
         Image.open('ReliefId.png'),
@@ -26,9 +21,6 @@ def save_id():
 
     else:
         content = txt
-        pattern = '参戦ID : ([a-zA-Z0-9]{8})'
-
-        repatter = re.compile(pattern)
         result = repatter.search(content)
 
         if result is not None:
@@ -38,8 +30,13 @@ def save_id():
             return None
 
 
-def save_screen_shot():
-    screen_shot = pyautogui.screenshot()
+def search_images():
+    search_result = pyautogui.locateOnScreen('search.png', confidence=0.8)
+    return search_result
+
+
+def save_screen_shot(search_result):
+    screen_shot = pyautogui.screenshot(region=search_result)
     screen_shot.save('ReliefId.png')
 
 
@@ -48,13 +45,32 @@ def set_clipboard(result):
 
 
 if __name__ == '__main__':
+
+    tools = pyocr.get_available_tools()
+
+    if len(tools) == 0:
+        print("No OCR tool found")
+        sys.exit(1)
+
+    tool = tools[0]
+
+    pattern = '参戦ID : ([a-zA-Z0-9]{8})'
+    repatter = re.compile(pattern)
+
     try:
         while True:
-            save_screen_shot()
+            start = time.time()
 
-            relief_id = save_id()
-            if relief_id is not None:
-                set_clipboard(relief_id)
+            if search_images() is not None:
+                save_screen_shot(search_images())
+
+                relief_id = save_id(tool, repatter)
+
+                if relief_id is not None:
+                    set_clipboard(relief_id)
+
+                else:
+                    pass
 
             else:
                 pass
